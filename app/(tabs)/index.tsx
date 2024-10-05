@@ -1,70 +1,105 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import {FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Header from '@/components/Layout/Header';
+import { Fontisto } from '@expo/vector-icons';
+import Category from '@/components/Category';
+import { useState } from 'react';
+import ProductCard from '@/components/ProductCard';
+import data from '../../data/data.json';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const categories = ['Trending Now', 'All', 'New', 'Mens', 'Womens']; 
 
 export default function HomeScreen() {
+  const [products, setProducts] = useState(data.products);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const handleLiked = (item: { id: number; }) => {
+    const newProducts = products.map((prod)=>{
+      if(prod.id === item.id){
+        return {
+          ...prod, 
+          isLiked: true
+        }
+      }
+      return prod;
+    });
+    setProducts(newProducts);
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <>
+      <LinearGradient
+        // Button Linear Gradient
+        colors={['#FDF0F3', '#FFFBFC']}
+        style={styles.container}>
+        <Header />
+
+        <FlatList 
+          numColumns={2}
+          data={products} 
+          renderItem={({item, index}) => 
+            <ProductCard item={item} key={index} handleLiked={handleLiked}/>
+          }
+          contentContainerStyle={{ paddingBottom: 150 }}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <>
+            <Text style={styles.matchText}>Match Your Style</Text>
+            {/* Search input */}
+            <View style={styles.inputContainer}>
+              <View style={styles.iconContainer}>
+                <Fontisto name='search' size={16} color={"#C0C0C0"}/>
+              </View>
+              <TextInput style={styles.textInput} placeholder='Search'/>
+            </View>
+
+              {/* Category Section */}
+              <FlatList 
+                data={categories} 
+                renderItem={({item,index}) => (
+                  <Category
+                    item={item}
+                    key={index}
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                  />
+                )} 
+                keyExtractor={(item) => item}
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              />
+            </>
+          }
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      </LinearGradient>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    paddingHorizontal: 20,
+    paddingTop: 50,
+  },
+  matchText: {
+    fontSize: 26,
+    color: '#000000',
+    marginTop: 25,
+    fontWeight: '700',
+  },
+  inputContainer: {
+    backgroundColor: '#FFFFFF',
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    flexDirection: 'row',
+    marginVertical: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  iconContainer: {
+    marginHorizontal: 15,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  textInput: {
+    flex: 1,
+  }
 });
